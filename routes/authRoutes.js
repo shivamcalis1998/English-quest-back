@@ -59,7 +59,12 @@ authRoute.post("/login", async (req, res) => {
 
     res
       .status(200)
-      .json({ message: "login succesfully", token, role: existingUser.role });
+      .json({
+        message: "login succesfully",
+        token,
+        role: existingUser.role,
+        userId: existingUser._id,
+      });
   } catch (error) {
     res.status(500).json({ message: "something went wrong" });
   }
