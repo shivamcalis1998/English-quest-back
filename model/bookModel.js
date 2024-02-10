@@ -7,7 +7,6 @@ const bookSchema = mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "user" },
   rating: { type: Number, required: true },
   createdAt: { type: String, default: Date.now },
-  image: { type: String, required: true },
 });
 
 const bookModel = mongoose.model("book", bookSchema);
