@@ -79,21 +79,21 @@ bookRoute.post(
 bookRoute.get("/", authenticated, async (req, res) => {
   try {
     let query = {};
-    const { language, sort, old, New, sortD, page, limit, userId, search } =
-      req.query;
+    const { language, sort, old, New, page, limit, userId, search } = req.query;
     const skip = (page - 1) * limit;
     if (language) {
       query.language = language;
     }
     let sortOption = { createdAt: -1 };
-    if (sort == "asc") {
-      sortOption.createdAt = 1;
-    }
 
-    let sortDate = { rating: -1 };
+    console.log("Sort parameter:", sort);
 
-    if (sortD == "asc") {
-      sortDate.rating = 1;
+    if (sort === "asc") {
+      sortOption = { createdAt: 1 };
+    } else if (sort === "rating_asc") {
+      sortOption = { rating: 1 };
+    } else if (sort === "rating_desc") {
+      sortOption = { rating: -1 };
     }
 
     if (userId && userId === req.user._id) {
@@ -115,10 +115,11 @@ bookRoute.get("/", authenticated, async (req, res) => {
       query.createdAt = { $lt: tenMinutesAgo };
     }
 
+    console.log("Sort option:", sortOption);
+
     const books = await bookModel
       .find(query)
       .sort(sortOption)
-      .sort(sortD)
       .skip(skip)
       .limit(limit);
     res.status(200).json({ books });
