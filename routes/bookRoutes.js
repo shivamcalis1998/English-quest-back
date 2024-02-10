@@ -79,7 +79,8 @@ bookRoute.post(
 bookRoute.get("/", authenticated, async (req, res) => {
   try {
     let query = {};
-    const { language, sort, old, New, page, limit, userId, search } = req.query;
+    const { language, sort, old, New, sortD, page, limit, userId, search } =
+      req.query;
     const skip = (page - 1) * limit;
     if (language) {
       query.language = language;
@@ -87,6 +88,12 @@ bookRoute.get("/", authenticated, async (req, res) => {
     let sortOption = { createdAt: -1 };
     if (sort == "asc") {
       sortOption.createdAt = 1;
+    }
+
+    let sortDate = { rating: -1 };
+
+    if (sortD == "asc") {
+      sortDate.rating = 1;
     }
 
     if (userId && userId === req.user._id) {
