@@ -66,7 +66,10 @@ bookRoute.get("/", authenticated, async (req, res) => {
     }
 
     if (search) {
-      query.title = { $regex: search, $options: "i" }; // Search by book title with case-insensitivity
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { author: { $regex: search, $options: "i" } },
+      ];
     }
 
     if (New) {
