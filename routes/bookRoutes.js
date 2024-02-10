@@ -10,15 +10,7 @@ const bookRoute = express.Router();
 
 const multer = require("multer");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
-
+const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 const authenticated = (req, res, next) => {
@@ -54,6 +46,9 @@ bookRoute.post(
       // Access uploaded image file and its path using req.file
       const image = req.file;
 
+      // Convert image buffer to Base64 string
+      const imageBase64 = image.buffer.toString("base64");
+
       const newBook = {
         title,
         author,
@@ -61,7 +56,7 @@ bookRoute.post(
         language,
         rating,
         userId: req.user._id,
-        image: image.path, // Use req.file.path to get the path of the uploaded image
+        image: imageBase64, // Save image as Base64 string
       };
 
       // Create a new book instance with image data included
@@ -70,8 +65,11 @@ bookRoute.post(
       // Save the new book to the database
       await book.save();
 
-      // Include image data in the response
-      res.status(201).json({ message: "books created successfully", book });
+      // Response without including image data
+      res.status(201).json({
+        message: "books created successfully",
+        book: { ...book._doc },
+      });
     } catch (error) {
       res.status(500).json({ error: "something is wrong" });
     }
