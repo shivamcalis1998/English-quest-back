@@ -122,7 +122,12 @@ bookRoute.get("/", authenticated, async (req, res) => {
       .sort(sortOption)
       .skip(skip)
       .limit(limit);
-    res.status(200).json({ books });
+
+    const booksWithImageURL = books.map((book) => ({
+      ...book.toObject(),
+      imageUrl: `/uploads/${book.image}`,
+    }));
+    res.status(200).json({ books: booksWithImageURL });
   } catch (error) {
     res.status(404).json({ error: "koi data koni dhar marao" });
   }
