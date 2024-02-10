@@ -118,6 +118,7 @@ bookRoute.get("/", authenticated, async (req, res) => {
     const books = await bookModel
       .find(query)
       .sort(sortOption)
+      .sort(sortD)
       .skip(skip)
       .limit(limit);
     res.status(200).json({ books });
