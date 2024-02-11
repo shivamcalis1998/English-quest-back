@@ -2,7 +2,7 @@ const express = require("express");
 const bookModel = require("../model/bookModel.js");
 const bcrypt = require("bcrypt");
 const dotenv = require("dotenv");
-const path = require("path");
+
 dotenv.config();
 
 const jwt = require("jsonwebtoken");
@@ -10,17 +10,13 @@ const multer = require("multer");
 
 const bookRoute = express.Router();
 
-const crypto = require("crypto");
-
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "public/Images");
+    cb(null, "uploads/");
   },
   filename: function (req, file, cb) {
-    cb(
-      null,
-      file.fieldname + "_" + Date.now() + path.extname(file.originalname)
-    );
+    const uniqueSuffix = Date.now();
+    cb(null, uniqueSuffix + file.originalname);
   },
 });
 
@@ -51,13 +47,12 @@ bookRoute.post(
   "/",
   authenticated,
   roleCheck,
-  upload.single("file"),
+  upload.single("image"),
   async (req, res) => {
     try {
       const { title, author, createdAt, language, rating } = req.body;
       const image = req.file.filename;
-      console.log(req.file); // Log the file field
-      console.log(req.body);
+
       const newBook = {
         title,
         author,
@@ -68,7 +63,8 @@ bookRoute.post(
         image,
       };
 
-      const book = await bookModel.create(newBook);
+      const book = new bookModel(newBook);
+      await book.save();
 
       res.status(201).json({
         message: "books created successfully",
@@ -127,7 +123,11 @@ bookRoute.get("/", authenticated, async (req, res) => {
       .skip(skip)
       .limit(limit);
 
-    res.status(200).json(books);
+    const booksWithImageURL = books.map((book) => ({
+      ...book.toObject(),
+      imageUrl: `/uploads/${book.image}`,
+    }));
+    res.status(200).json({ books: booksWithImageURL });
   } catch (error) {
     res.status(404).json({ error: "koi data koni dhar marao" });
   }

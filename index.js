@@ -11,7 +11,7 @@ app.use(express.json());
 
 app.use("/", authRoute);
 app.use("/books", bookRoute);
-app.use(express.static("public"));
+app.use("/uploads", express.static("uploads"));
 
 app.listen(port, async () => {
   console.log(`app is running on port ${port}`);
