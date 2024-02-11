@@ -6,21 +6,8 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const jwt = require("jsonwebtoken");
-const multer = require("multer");
 
 const bookRoute = express.Router();
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now();
-    cb(null, uniqueSuffix + file.originalname);
-  },
-});
-
-const upload = multer({ storage: storage });
 
 const authenticated = (req, res, next) => {
   const token = req.headers.authentication;
@@ -43,38 +30,30 @@ const roleCheck = (req, res, next) => {
   next();
 };
 
-bookRoute.post(
-  "/",
-  authenticated,
-  roleCheck,
-  upload.single("image"),
-  async (req, res) => {
-    try {
-      const { title, author, createdAt, language, rating } = req.body;
-      const image = req.file.filename;
+bookRoute.post("/", authenticated, roleCheck, async (req, res) => {
+  try {
+    const { title, author, createdAt, language, rating } = req.body;
 
-      const newBook = {
-        title,
-        author,
-        createdAt,
-        language,
-        rating,
-        userId: req.user._id,
-        image,
-      };
+    const newBook = {
+      title,
+      author,
+      createdAt,
+      language,
+      rating,
+      userId: req.user._id,
+    };
 
-      const book = new bookModel(newBook);
-      await book.save();
+    const book = new bookModel(newBook);
+    await book.save();
 
-      res.status(201).json({
-        message: "books created successfully",
-        book,
-      });
-    } catch (error) {
-      res.status(500).json({ error: "something is wrong" });
-    }
+    res.status(201).json({
+      message: "books created successfully",
+      book,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "something is wrong" });
   }
-);
+});
 
 bookRoute.get("/", authenticated, async (req, res) => {
   try {
@@ -123,11 +102,7 @@ bookRoute.get("/", authenticated, async (req, res) => {
       .skip(skip)
       .limit(limit);
 
-    const booksWithImageURL = books.map((book) => ({
-      ...book.toObject(),
-      imageUrl: `/uploads/${book.image}`,
-    }));
-    res.status(200).json({ books: booksWithImageURL });
+    res.status(200).json({ books });
   } catch (error) {
     res.status(404).json({ error: "koi data koni dhar marao" });
   }
